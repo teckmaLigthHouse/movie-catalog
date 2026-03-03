@@ -39,7 +39,11 @@ export function Header() {
 
   return (
     <header className={styles.header}>
-      <div className={styles.logo}>BarretosFlix</div>
+      <img
+        src="/logocomnome.png"
+        alt="BarretoFlix"
+        className={styles.logoImage}
+      />
 
       {/* Mobile Menu Button */}
       <button

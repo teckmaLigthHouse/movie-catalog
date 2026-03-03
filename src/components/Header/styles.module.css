@@ -243,3 +243,26 @@
     width: 100%;
   }
 }
+.logoLink {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.logoLink:hover {
+  transform: scale(1.05);
+}
+
+.logoImage {
+  height: 45px; /* Ajuste conforme necessário */
+  width: auto;
+  display: block;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .logoImage {
+    height: 35px;
+  }
+}
