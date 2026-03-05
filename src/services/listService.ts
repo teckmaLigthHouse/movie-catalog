@@ -1,27 +1,14 @@
 import { supabase } from "../lib/supabaseClient";
-
-
-// Tipagem para itens da lista
-export interface ListItem {
-  id: string;
-  user_id: string;
-  item_id: string;
-  item_type: 'movie' | 'series';
-  list_type: 'watchlist' | 'favorites';
-  created_at: string;
-}
+import type { ListItem, ApiResponse } from "../types/movie";
 
 /**
- * Adiciona um item à lista do usuário
- * @param itemId - ID do filme/série
- * @param itemType - Tipo do item (movie/series)
- * @param listType - Tipo de lista (watchlist/favorites)
+ * Adiciona um item à lista
  */
 export async function addToList(
   itemId: string,
   itemType: 'movie' | 'series',
   listType: 'watchlist' | 'favorites'
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ApiResponse<ListItem>> {
   try {
     const { data, error } = await supabase.rpc('add_to_list', {
       p_item_id: itemId,
@@ -30,94 +17,99 @@ export async function addToList(
     });
 
     if (error) throw error;
-    if (data) return data //gambiarra
     
-    return { success: true };
-  } catch (error: any) {
+    return { success: true, data };
+  } catch (error) {
     console.error('Erro ao adicionar item à lista:', error);
-    
-    return { success: false, error: error.message };
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Erro desconhecido' 
+    };
   }
 }
 
 /**
- * Remove um item da lista do usuário
- * @param itemId - ID do filme/série
- * @param listType - Tipo de lista (watchlist/favorites)
+ * Remove um item da lista
  */
 export async function removeFromList(
   itemId: string,
   listType: 'watchlist' | 'favorites'
-): Promise<{ success: boolean; error?: string }> {
+): Promise<ApiResponse<null>> {
   try {
-    const { data, error } = await supabase.rpc('remove_from_list', {
+    const { error } = await supabase.rpc('remove_from_list', {
       p_item_id: itemId,
       p_list_type: listType
     });
 
     if (error) throw error;
-    if (data) return data //gambiarra
     
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Erro ao remover item da lista:', error);
-    return { success: false, error: error.message };
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Erro desconhecido' 
+    };
   }
 }
 
 /**
  * Obtém os itens da lista do usuário
- * @param listType - Tipo de lista (watchlist/favorites)
- * @param itemType - Tipo de item opcional para filtrar (movie/series)
- */
-/**
- * Obtém os itens da lista do usuário
  */
 export async function getUserList(
-    listType: 'watchlist' | 'favorites',
-    itemType?: 'movie' | 'series'
-  ) {
-    try {
-      let query = supabase
-        .from('my_lists')
-        .select('*')
-        .eq('list_type', listType);
-        
-      if (itemType) {
-        query = query.eq('item_type', itemType);
-      }
-      
-      const { data, error } = await query.order('id', { ascending: false });
-      
-      if (error) throw error;
-      return { data };
-    } catch (error: any) {
-      console.error('Erro ao obter lista:', error);
-      return { data: null, error: error.message };
+  listType: 'watchlist' | 'favorites',
+  itemType?: 'movie' | 'series'
+): Promise<ApiResponse<ListItem[]>> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Usuário não autenticado');
+
+    let query = supabase
+      .from('my_lists')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('list_type', listType);
+
+    if (itemType) {
+      query = query.eq('item_type', itemType);
     }
+    
+    const { data, error } = await query.order('id', { ascending: false });
+    
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error) {
+    console.error('Erro ao obter lista:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Erro desconhecido' 
+    };
   }
-  
-  /**
-   * Verifica se um item está na lista
-   */
-  export async function isInList(
-    itemId: string,
-    listType: 'watchlist' | 'favorites'
-  ): Promise<boolean> {
-    try {
-      // Importante: Não precisamos passar o user_id manualmente se o RLS estiver ativo,
-      // mas se passar, o tipo deve bater. O erro 400 geralmente é aqui.
-      const { data, error } = await supabase
-        .from('my_lists')
-        .select('item_id')
-        .eq('item_id', itemId)
-        .eq('list_type', listType)
-        .maybeSingle(); // Usar maybeSingle é mais limpo que limit(1)
-        
-      if (error) throw error;
-      return !!data;
-    } catch (error) {
-      console.error('Erro ao verificar item na lista:', error);
-      return false;
-    }
+}
+
+/**
+ * Verifica se um item está na lista
+ */
+export async function isInList(
+  itemId: string,
+  listType: 'watchlist' | 'favorites'
+): Promise<boolean> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+
+    const { data, error } = await supabase
+      .from('my_lists')
+      .select('item_id')
+      .eq('user_id', user.id)
+      .eq('item_id', itemId)
+      .eq('list_type', listType)
+      .maybeSingle();
+      
+    if (error) throw error;
+    return !!data;
+  } catch (error) {
+    console.error('Erro ao verificar item na lista:', error);
+    return false;
   }
+}

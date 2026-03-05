@@ -1,15 +1,16 @@
+// pages/TVCategory/index.tsx
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getMoviesByCategory, getGenres } from "../../services/movieService";
-import { MovieCard } from "../../components/MovieCard";
-import type { Movie, Genre } from "../../types/movie";
+import { getTVShowsByCategory, getTVGenres } from "../../services/tvService";
+import { Card } from "../../components/Card";
+import type { TVShow, TVGenre } from "../../types/tv";
 import styles from "./styles.module.css";
 
-function Category() {
+function TVCategory() {
   const { id } = useParams<{ id: string }>();
   const genreId = Number(id);
 
-  const [movies, setMovies] = useState<Movie[]>([]);
+  const [shows, setShows] = useState<TVShow[]>([]);
   const [genreName, setGenreName] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -26,18 +27,18 @@ function Category() {
           throw new Error('ID da categoria inválido');
         }
 
-        const { results, total_pages } = await getMoviesByCategory(genreId, page);
-        setMovies(results);
+        const { results, total_pages } = await getTVShowsByCategory(genreId, page);
+        setShows(results);
         setTotalPages(total_pages);
 
-        const genres = await getGenres();
-        const genre = genres.find((g: Genre) => g.id === genreId);
+        const genres = await getTVGenres();
+        const genre = genres.find((g: TVGenre) => g.id === genreId);
         setGenreName(genre ? genre.name : "Categoria");
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (err) {
         console.error(err);
-        setError(err instanceof Error ? err.message : 'Erro ao carregar filmes');
+        setError(err instanceof Error ? err.message : 'Erro ao carregar séries');
       } finally {
         setLoading(false);
       }
@@ -49,7 +50,7 @@ function Category() {
     return (
       <div className={styles.loadingContainer}>
         <div className={styles.spinner}></div>
-        <p>Carregando filmes...</p>
+        <p>Carregando séries...</p>
       </div>
     );
   }
@@ -57,9 +58,10 @@ function Category() {
   if (error) {
     return (
       <div className={styles.errorContainer}>
+        <span className={styles.errorIcon}>📺</span>
         <h2>Ops! Algo deu errado</h2>
         <p>{error}</p>
-        <Link to="/home" className={styles.backLink}>Voltar para Home</Link>
+        <Link to="/series" className={styles.backLink}>Voltar para Séries</Link>
       </div>
     );
   }
@@ -68,26 +70,28 @@ function Category() {
     <div className={styles.container}>
       <div className={styles.categoryHeader}>
         <h1 className={styles.categoryTitle}>{genreName}</h1>
-        <span className={styles.movieCount}>{movies.length} filmes</span>
+        <span className={styles.showCount}>{shows.length} séries</span>
       </div>
 
-      {movies.length > 0 ? (
+      {shows.length > 0 ? (
         <div className={styles.grid}>
-          {movies.map((movie) => (
-            <MovieCard
-              key={movie.id}
-              id={movie.id}
-              title={movie.title}
-              posterPath={movie.poster_path}
-              voteAverage={movie.vote_average}
-              releaseDate={movie.release_date}
+          {shows.map((show) => (
+            <Card
+              key={show.id}
+              id={show.id}
+              title={show.name}
+              posterPath={show.poster_path}
+              voteAverage={show.vote_average}
+              year={show.first_air_date}
+              mediaType="tv"
             />
           ))}
         </div>
       ) : (
         <div className={styles.emptyState}>
-          <p>Nenhum filme encontrado nesta categoria</p>
-          <Link to="/home" className={styles.backLink}>Voltar para Home</Link>
+          <span className={styles.emptyIcon}>📺</span>
+          <p>Nenhuma série encontrada nesta categoria</p>
+          <Link to="/series" className={styles.backLink}>Voltar para Séries</Link>
         </div>
       )}
 
@@ -119,4 +123,4 @@ function Category() {
   );
 }
 
-export default Category;
+export default TVCategory;

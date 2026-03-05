@@ -11,6 +11,11 @@ import Category from './Pages/Category';
 import Details from './Pages/Details';
 import { NotFound } from './Pages/NotFound';
 import { Footer } from './components/Footer';
+import UserProfile from './Pages/UserPage';
+import Series from './Pages/Series';
+import Movies from './Pages/Movies';
+import TVDetails from './Pages/TVDetails';
+import TVCategory from './Pages/TVCategory';
 
 function ProtectedRoute({ session, children }: { session: Session | null; children: React.ReactNode }) {
   if (!session) return <Navigate to="/login" replace />;
@@ -82,6 +87,57 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute session={session}>
+              <Header />
+              <UserProfile />
+              <Footer />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/series"
+          element={
+            <ProtectedRoute session={session}>
+              <Header />
+              <Series />
+              <Footer />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/movies"
+          element={
+            <ProtectedRoute session={session}>
+              <Header />
+              <Movies />
+              <Footer />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tv/:id"
+          element={
+            <ProtectedRoute session={session}>
+              <Header />
+              <TVDetails />
+              <Footer />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tv/category/:id"
+          element={
+            <ProtectedRoute session={session}>
+              <Header />
+              <TVCategory />
+              <Footer />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="" element={<Navigate to={session ? "/home" : "/login"} replace />} />
         <Route path="*" element={<NotFound />} />,
       </Routes>

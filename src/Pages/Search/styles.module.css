@@ -34,7 +34,13 @@
   font-size: 1rem;
 }
 
-/* Formulário */
+/* Search Section */
+.searchSection {
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto 20px;
+}
+
 .form {
   max-width: 600px;
   margin: 0 auto 40px;
@@ -87,6 +93,216 @@
   transform: scale(1.02);
 }
 
+/* Sugestões */
+.suggestions {
+  position: absolute;
+  top: calc(100% - 20px);
+  left: 0;
+  right: 0;
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 94, 0, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 100;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.suggestionsLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px;
+  color: #888;
+}
+
+.suggestionsSpinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 94, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--color-primary);
+  animation: spin 0.8s linear infinite;
+}
+
+.suggestionItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.suggestionItem:last-child {
+  border-bottom: none;
+}
+
+.suggestionItem:hover {
+  background: rgba(255, 94, 0, 0.1);
+  transform: translateX(5px);
+}
+
+.suggestionPoster {
+  width: 40px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.suggestionPosterPlaceholder {
+  width: 40px;
+  height: 60px;
+  background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.suggestionInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.suggestionTitle {
+  font-weight: 500;
+  color: #fff;
+}
+
+.suggestionYear {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.suggestionRating {
+  font-size: 0.85rem;
+  color: #ffd700;
+  padding: 4px 8px;
+  background: rgba(255, 215, 0, 0.1);
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+/* Filtros */
+.filterToggle {
+  display: none;
+  max-width: 600px;
+  margin: 0 auto 20px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 30px;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filtersPanel {
+  max-width: 600px;
+  margin: 0 auto 30px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filterGroup {
+  flex: 1;
+  min-width: 150px;
+}
+
+.filterLabel {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.filterSelect {
+  width: 100%;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.filterSelect option {
+  background: #1a1a1a;
+}
+
+.filterSelect:hover {
+  border-color: rgba(255, 94, 0, 0.3);
+}
+
+.filterSelect:focus {
+  border-color: var(--color-primary);
+}
+
+.clearFilters {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #888;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.clearFilters:hover {
+  background: rgba(255, 0, 0, 0.1);
+  border-color: rgba(255, 0, 0, 0.3);
+  color: #ff6b6b;
+}
+
+.applyFilters {
+  padding: 10px 20px;
+  background: var(--color-primary);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.applyFilters:hover {
+  background: #ff8533;
+  transform: scale(1.05);
+}
+
 /* Loading */
 .loadingContainer {
   display: flex;
@@ -114,6 +330,10 @@
 .resultsInfo {
   max-width: 1200px;
   margin: 0 auto 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .resultsCount {
@@ -124,6 +344,16 @@
   border-radius: 30px;
   font-size: 0.95rem;
   color: #e0e0e0;
+}
+
+.activeFilter {
+  display: inline-block;
+  padding: 6px 16px;
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 30px;
+  font-size: 0.9rem;
+  color: #ffd700;
 }
 
 /* Grid de resultados */
@@ -243,6 +473,18 @@
   font-size: 1rem;
 }
 
+/* Mensagem de erro */
+.errorMessage {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 12px 20px;
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  border-radius: 8px;
+  color: #ff6b6b;
+  text-align: center;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .container {
@@ -270,6 +512,32 @@
   .searchButton {
     width: 100%;
     padding: 12px;
+  }
+
+  .filterToggle {
+    display: flex;
+  }
+
+  .filtersPanel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filterGroup {
+    width: 100%;
+  }
+
+  .clearFilters, .applyFilters {
+    width: 100%;
+  }
+
+  .suggestions {
+    position: fixed;
+    top: auto;
+    left: 16px;
+    right: 16px;
+    max-height: 300px;
+    overflow-y: auto;
   }
 
   .results {
@@ -313,4 +581,39 @@
   .initialState h3 {
     font-size: 1.2rem;
   }
+
+  .suggestionPoster {
+    width: 30px;
+    height: 45px;
+  }
+
+  .suggestionTitle {
+    font-size: 0.9rem;
+  }
+
+  .suggestionRating {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+  }
+}
+/* Adicione ao final do seu CSS existente */
+
+.suggestionBadge {
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.suggestionBadge.movie {
+  background: rgba(255, 94, 0, 0.2);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.suggestionBadge.tv {
+  background: rgba(33, 150, 243, 0.2);
+  color: #2196f3;
+  border: 1px solid #2196f3;
 }

@@ -1,104 +1,140 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { getMovieDetails, getSimilarMovies, getMovieVideos } from "../../services/movieService";
+import { addMovieToHistory } from "../../services/historyService";
 import { addToList, removeFromList, isInList } from "../../services/listService";
 import { MovieCard } from "../../components/MovieCard";
+import { ListButton } from "../../components/ListButton";
+import { FavoriteButton } from "../../components/FavoriteButton";
+import type { MovieDetails as MovieDetailsType } from "../../types/movie";
 import styles from "./styles.module.css";
 
 function Details() {
   const { id } = useParams<{ id: string }>();
-  const movieId = Number(id);
+  const navigate = useNavigate();
 
-  const [movie, setMovie] = useState<any>(null);
+  // TODOS OS HOOKS DEVEM VIR ANTES DE QUALQUER RETURN CONDICIONAL
+  const [movie, setMovie] = useState<MovieDetailsType | null>(null);
   const [similar, setSimilar] = useState<any[]>([]);
   const [trailer, setTrailer] = useState<any>(null);
   const [showTrailer, setShowTrailer] = useState(false);
   const [loading, setLoading] = useState(true);
-  
-  // Estados para favoritos
+  const [error, setError] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [favoriteLoading, setFavoriteLoading] = useState(false);
-  
-  // Estados para minha lista
   const [isInWatchlist, setIsInWatchlist] = useState(false);
-  const [watchlistLoading, setWatchlistLoading] = useState(false);
+
+  // Validação do ID (depois dos hooks)
+  const isValidId = id && id !== 'undefined' && !isNaN(Number(id));
+  const movieId = isValidId ? Number(id) : null;
 
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true);
-        const details = await getMovieDetails(movieId);
-        setMovie(details);
-        
-        // Verificar status nos favoritos
-        const favoriteStatus = await isInList(movieId.toString(), 'favorites');
-        setIsFavorite(favoriteStatus);
-        
-        // Verificar status na watchlist
-        const watchlistStatus = await isInList(movieId.toString(), 'watchlist');
-        setIsInWatchlist(watchlistStatus);
-        
-        const video = await getMovieVideos(movieId);
-        setTrailer(video);
+        setError(null);
 
-        const sims = await getSimilarMovies(movieId);
+        if (!movieId) {
+          throw new Error('ID do filme inválido');
+        }
+
+        const [details, video, sims] = await Promise.all([
+          getMovieDetails(movieId),
+          getMovieVideos(movieId),
+          getSimilarMovies(movieId)
+        ]);
+
+        if (!details) {
+          throw new Error('Filme não encontrado');
+        }
+
+        setMovie(details);
+        setTrailer(video);
         setSimilar(sims);
-      } catch (err) {
-        console.error(err);
+
+        // Adiciona ao histórico
+        await addMovieToHistory(movieId);
+
+        const [favoriteStatus, watchlistStatus] = await Promise.all([
+          isInList(movieId.toString(), 'favorites'),
+          isInList(movieId.toString(), 'watchlist')
+        ]);
+
+        setIsFavorite(favoriteStatus);
+        setIsInWatchlist(watchlistStatus);
+
+      } catch (err: any) {
+        console.error('Erro ao carregar detalhes:', err);
+        setError(err.message || 'Erro ao carregar filme');
       } finally {
         setLoading(false);
       }
     }
+
     loadData();
   }, [movieId]);
 
-  // Função para alternar favorito
+  // Handlers
   const toggleFavorite = async () => {
-    if (favoriteLoading) return;
-    
-    setFavoriteLoading(true);
+    if (!movieId) return;
+
     try {
       if (isFavorite) {
-        const result = await removeFromList(movieId.toString(), 'favorites');
-        if (result.success) setIsFavorite(false);
+        await removeFromList(movieId.toString(), 'favorites');
+        setIsFavorite(false);
       } else {
-        const result = await addToList(movieId.toString(), 'movie', 'favorites');
-        if (result.success) setIsFavorite(true);
+        await addToList(movieId.toString(), 'movie', 'favorites');
+        setIsFavorite(true);
       }
     } catch (error) {
       console.error("Erro ao atualizar favoritos:", error);
-    } finally {
-      setFavoriteLoading(false);
     }
   };
 
-  // Função para alternar watchlist
   const toggleWatchlist = async () => {
-    if (watchlistLoading) return;
-    
-    setWatchlistLoading(true);
+    if (!movieId) return;
+
     try {
       if (isInWatchlist) {
-        const result = await removeFromList(movieId.toString(), 'watchlist');
-        if (result.success) setIsInWatchlist(false);
+        await removeFromList(movieId.toString(), 'watchlist');
+        setIsInWatchlist(false);
       } else {
-        const result = await addToList(movieId.toString(), 'movie', 'watchlist');
-        if (result.success) setIsInWatchlist(true);
+        await addToList(movieId.toString(), 'movie', 'watchlist');
+        setIsInWatchlist(true);
       }
     } catch (error) {
       console.error("Erro ao atualizar watchlist:", error);
-    } finally {
-      setWatchlistLoading(false);
     }
   };
 
-  if (loading) return (
-    <div className={styles.loadingContainer}>
-      <div className={styles.spinner}></div>
-      <p>Carregando detalhes do filme...</p>
-    </div>
-  );
+  const handleGoHome = () => {
+    navigate('/home');
+  };
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner} />
+        <p>Carregando detalhes do filme...</p>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !movie) {
+    return (
+      <div className={styles.errorContainer}>
+        <span className={styles.errorIcon}>🎬</span>
+        <h2>Ops! Algo deu errado</h2>
+        <p>{error || 'Filme não encontrado'}</p>
+        <button onClick={handleGoHome} className={styles.backButton}>
+          Voltar para Home
+        </button>
+      </div>
+    );
+  }
+
+  // Success state
   return (
     <div className={styles.container}>
       {/* Hero com backdrop */}
@@ -108,19 +144,21 @@ function Details() {
             src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
             alt={movie.title}
             className={styles.heroBackdrop}
+            loading="lazy"
           />
-          <div className={styles.heroGradient}></div>
+          <div className={styles.heroGradient} />
         </div>
       )}
 
       <div className={styles.contentWrapper}>
         <div className={styles.infoSection}>
-          <div className={styles.posterPlaceholder}>
+          <div className={styles.posterWrapper}>
             {movie.poster_path ? (
               <img
                 src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                 alt={movie.title}
                 className={styles.poster}
+                loading="lazy"
               />
             ) : (
               <div className={styles.noPoster}>🎬</div>
@@ -134,14 +172,12 @@ function Details() {
               {movie.release_date && (
                 <span className={styles.year}>{movie.release_date.slice(0, 4)}</span>
               )}
-
               {movie.vote_average > 0 && (
                 <span className={styles.rating}>
                   <span className={styles.star}>★</span>
                   {movie.vote_average.toFixed(1)}
                 </span>
               )}
-
               {movie.runtime > 0 && (
                 <span className={styles.runtime}>{movie.runtime} min</span>
               )}
@@ -149,7 +185,7 @@ function Details() {
 
             {movie.genres && movie.genres.length > 0 && (
               <div className={styles.genres}>
-                {movie.genres.map((genre: any) => (
+                {movie.genres.map((genre) => (
                   <Link
                     key={genre.id}
                     to={`/category/${genre.id}`}
@@ -172,73 +208,27 @@ function Details() {
               </div>
             )}
 
-            {/* Botões de ação */}
-<div className={styles.actionButtons}>
-  {trailer && (
-    <button
-      onClick={() => setShowTrailer(true)}
-      className={styles.trailerButton}
-    >
-      ▶ VER TRAILER
-    </button>
-  )}
+            <div className={styles.actionButtons}>
+              {trailer && (
+                <button
+                  onClick={() => setShowTrailer(true)}
+                  className={styles.trailerButton}
+                >
+                  <span className={styles.trailerIcon}>▶</span>
+                  VER TRAILER
+                </button>
+              )}
 
-  {/* Botão Minha Lista */}
-  <button
-    onClick={toggleWatchlist}
-    className={`${styles.listButton} ${isInWatchlist ? styles.inList : ''}`}
-    disabled={watchlistLoading}
-    title={isInWatchlist ? "Remover da lista" : "Adicionar à lista"}
-  >
-    {watchlistLoading ? (
-      <div className={styles.spinnerSmall}></div>
-    ) : (
-      <>
-        <svg
-          viewBox="0 0 24 24"
-          fill={isInWatchlist ? "currentColor" : "none"}
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={styles.listIcon}
-        >
-          {isInWatchlist ? (
-            <polyline points="20 6 9 17 4 12"></polyline> // Ícone de Check
-          ) : (
-            <>
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </>
-          )}
-        </svg>
-        <span className={styles.listButtonText}>
-          {isInWatchlist ? "NA LISTA" : "MINHA LISTA"}
-        </span>
-      </>
-    )}
-  </button>
+              <ListButton
+                isInList={isInWatchlist}
+                onClick={toggleWatchlist}
+              />
 
-  {/* Botão de Favorito */}
-  <button
-    onClick={toggleFavorite}
-    className={`${styles.favoriteButton} ${isFavorite ? styles.favorited : ''}`}
-    disabled={favoriteLoading}
-    title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-  >
-    <svg
-      viewBox="0 0 24 24"
-      fill={isFavorite ? "var(--color-primary, #ff5e00)" : "none"}
-      stroke={isFavorite ? "var(--color-primary, #ff5e00)" : "currentColor"}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={styles.heartIcon}
-    >
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.84-8.84 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-    </svg>
-  </button>
-</div>
+              <FavoriteButton
+                isFavorite={isFavorite}
+                onClick={toggleFavorite}
+              />
+            </div>
           </div>
         </div>
 
@@ -250,10 +240,9 @@ function Details() {
               src={`https://playerflixapi.com/filme/${id}`}
               allow="autoplay; encrypted-media; picture-in-picture"
               allowFullScreen
-              frameBorder="0"
-              scrolling="no"
               className={styles.player}
               title={movie.title}
+              loading="lazy"
             />
           </div>
         </div>
@@ -288,7 +277,6 @@ function Details() {
             <iframe
               src={`https://www.youtube.com/embed/${trailer.key}?autoplay=1`}
               title={trailer.name}
-              frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
               className={styles.trailerIframe}

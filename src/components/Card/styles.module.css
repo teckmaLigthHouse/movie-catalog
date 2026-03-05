@@ -1,0 +1,226 @@
+/* components/Card/styles.module.css */
+
+.card {
+  width: 180px;
+  cursor: pointer;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1a1a1a;
+  color: #fff;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 25px rgba(255, 94, 0, 0.2);
+  border-color: rgba(255, 94, 0, 0.3);
+}
+
+.posterWrapper {
+  position: relative;
+  width: 100%;
+  height: 270px;
+  overflow: hidden;
+  background: #0f0f0f;
+  flex-shrink: 0;
+}
+
+.poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.3s ease;
+  display: block;
+}
+
+.card:hover .poster {
+  transform: scale(1.1);
+}
+
+.noPoster {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  color: #666;
+}
+
+/* Container para nota + episódio */
+.ratingContainer {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+  max-width: calc(100% - 20px);
+}
+
+/* Badge do episódio */
+.episodeBadge {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  color: #ff5e00;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(255, 94, 0, 0.3);
+  white-space: nowrap;
+}
+
+/* Nota */
+.rating {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  color: #ffd700;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  white-space: nowrap;
+}
+
+.star {
+  color: #ffd700;
+  font-size: 0.9rem;
+}
+
+.info {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.2));
+  flex: 1;
+}
+
+/* Badge de tipo */
+.badgeContainer {
+  margin-bottom: 4px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s ease;
+  color: #fff;
+  width: fit-content;
+}
+
+.badge.movie {
+  background: linear-gradient(135deg, #ff5e00, #ff8533);
+}
+
+.badge.tv {
+  background: linear-gradient(135deg, #2196f3, #42a5f5);
+}
+
+.card:hover .badge {
+  transform: scale(1.05);
+}
+
+.title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #fff;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.66rem;
+}
+
+.year {
+  font-size: 0.85rem;
+  color: #999;
+  margin: 0;
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: 12px;
+  width: fit-content;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .card {
+    width: 160px;
+  }
+  
+  .posterWrapper {
+    height: 240px;
+  }
+  
+  .title {
+    font-size: 0.9rem;
+    min-height: 2.52rem;
+  }
+  
+  .badge {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+  }
+  
+  .rating, .episodeBadge {
+    font-size: 0.75rem;
+    padding: 3px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    width: 140px;
+  }
+  
+  .posterWrapper {
+    height: 210px;
+  }
+  
+  .info {
+    padding: 8px;
+  }
+  
+  .title {
+    font-size: 0.85rem;
+    min-height: 2.38rem;
+  }
+  
+  .year {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+  }
+  
+  .badge {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+  }
+  
+  .rating, .episodeBadge {
+    font-size: 0.7rem;
+    padding: 2px 5px;
+  }
+}
